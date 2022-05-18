@@ -8,6 +8,21 @@ class Api::V1::MerchantsController < ApplicationController
   end
 
   def find
-    render json: MerchantSerializer.new(Merchant.search(params[:name]))
+    merchant = Merchant.search(params[:name]).order(:name).first
+    find_response(merchant)
   end
+
+  def find_all
+    merchant = Merchant.search(params[:name])
+    find_response(merchant)
+  end
+
+  private
+    def find_response(merchant)
+      if merchant
+        render json: MerchantSerializer.new(merchant), status: :ok
+      else
+        render json: { data: { error: 'Merchant not found' } }
+      end
+    end
 end
