@@ -79,6 +79,8 @@ RSpec.describe 'The items API' do
     expect(response).to be_successful
     expect(items.count).to eq(1)
     expect{Item.find(deleted_item.id)}.to raise_error(ActiveRecord::RecordNotFound)
+
+#    delete "/api/v1/items/foo"
   end
 
   it "can update an existing item" do

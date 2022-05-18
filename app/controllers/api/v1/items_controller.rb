@@ -16,8 +16,12 @@ class Api::V1::ItemsController < ApplicationController
 
   def destroy
     item = Item.find(params[:id])
-    Item.destroy(params[:id])
-    render json: ItemSerializer.new(item)
+#  rescue ActiveRecord::RecordNotFound
+#      wip = render json: error_message, status: 404
+    if item
+      item.destroy!
+      render status: 204
+    end
   end
 
   def update
