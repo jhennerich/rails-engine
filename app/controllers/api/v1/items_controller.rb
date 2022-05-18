@@ -20,7 +20,7 @@ class Api::V1::ItemsController < ApplicationController
 #      wip = render json: error_message, status: 404
     if item
       item.destroy!
-      render status: 204
+#      render status: 204
     end
   end
 

@@ -8,7 +8,7 @@ class Api::V1::MerchantsController < ApplicationController
   end
 
   def find
-    merchant = Merchant.search(params[:name]).order(:name).first
+    merchant = Merchant.search_return_one(params[:name])
     find_response(merchant)
   end
 
