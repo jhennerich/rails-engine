@@ -46,4 +46,40 @@ RSpec.describe 'The items API' do
     expect(item[:data][:attributes][:name]).to eq(item1.name)
     expect(item[:data][:id]).to_not eq(item2.id)
   end
+
+  it "can create a new item" do
+    merchant = create(:merchant)
+#    item_params = create(:item, merchant_id: merchant.id)
+    item_params = {
+      name: 'X-wing',
+      description: 'Rebel attack fighter',
+      unit_price: 2000,
+      merchant_id: merchant.id
+    }
+
+    headers = {"CONTENT_TYPE" => "application/json"}
+    #include this header to make sure params are passed as JSON rather than as plain text
+
+    post "/api/v1/items", headers: headers, params: JSON.generate(item: item_params)
+    created_item = Item.last
+
+    expect(response).to be_successful
+    expect(created_item.name).to eq(item_params[:name])
+    expect(created_item.description).to eq(item_params[:description])
+    expect(created_item.unit_price).to eq(item_params[:unit_price])
+  end
+
+  it 'can delete an item' do
+    merchant = create(:merchant)
+    create(:item, merchant_id: merchant.id)
+    deleted_item = create(:item, merchant_id: merchant.id)
+
+    items = Item.all
+    delete "/api/v1/items/#{deleted_item.id}"
+
+    expect(response).to be_successful
+    expect(items.count).to eq(1)
+    expect{Item.find(deleted_item.id)}.to raise_error(ActiveRecord::RecordNotFound)
+
+  end
 end
