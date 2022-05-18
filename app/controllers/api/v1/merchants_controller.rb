@@ -9,5 +9,5 @@ class Api::V1::MerchantsController < ApplicationController
 
   def find
     render json: MerchantSerializer.new(Merchant.search(params[:name]))
-  end 
+  end
 end
