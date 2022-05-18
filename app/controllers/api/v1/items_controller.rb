@@ -33,6 +33,15 @@ class Api::V1::ItemsController < ApplicationController
     end
   end
 
+  def find
+    item = Item.search_return_one(params[:name])
+    find_response(item)
+  end
+
+  def find_all
+    item = Item.search(params[:name])
+    find_response(item)
+  end
 
   private
     def item_params
@@ -44,5 +53,12 @@ class Api::V1::ItemsController < ApplicationController
         "message": "your query could not be completed",
         "errors": []
       }
+    end
+    def find_response(item)
+      if item
+        render json: ItemSerializer.new(item), status: :ok
+      else
+        render json: { data: { error: 'Item(s) not found' } }
+      end
     end
 end
