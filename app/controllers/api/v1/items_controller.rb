@@ -34,13 +34,14 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def find
-    item = Item.search_return_one(params[:name])
-    find_response(item)
+    item_search = Item.search_return_one(params[:name])
+    binding.pry
+    wip = find_response(item_search)
   end
 
   def find_all
-    item = Item.search(params[:name])
-    find_response(item)
+      item = Item.search(params[:name])
+      find_response(item)
   end
 
   private
@@ -58,7 +59,7 @@ class Api::V1::ItemsController < ApplicationController
       if item
         render json: ItemSerializer.new(item), status: :ok
       else
-        render json: { data: { error: 'Item(s) not found' } }
+        render json: { data: { error: 'Item(s) not found' } }, status: 200
       end
     end
 end

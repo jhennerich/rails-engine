@@ -45,6 +45,8 @@ RSpec.describe 'The items API' do
     expect(item[:data][:attributes]).to include(:name)
     expect(item[:data][:attributes][:name]).to eq(item1.name)
     expect(item[:data][:id]).to_not eq(item2.id)
+
+
   end
 
   it "can create a new item" do
@@ -119,5 +121,74 @@ RSpec.describe 'The items API' do
     expect(merchant[:data][:attributes][:name]).to eq(merchant1.name)
 
     expect(merchant.count).to_not eq(0)
+  end
+
+  it 'sends data for the first item from find result Happy Path' do
+
+    merchant = create(:merchant, name: "Star Wars")
+    item = create(:item, name: "A-wing", merchant_id: merchant.id)
+    create(:item, merchant_id: merchant.id)
+    create(:item, merchant_id: merchant.id)
+    create(:item, merchant_id: merchant.id)
+
+    allow(Item).to receive(:search_return_one).and_return(item)
+    search = "wing"
+
+    get "/api/v1/items/find?name=#{search}"
+
+    results = JSON.parse(response.body, symbolize_names: true)
+
+    expect(Item).to have_received(:search_return_one).with(search).once
+    expect(response).to be_successful
+    expect(results.count).to eq(1)
+    expect(results[:data].count).to eq(3)
+    expect(results[:data][:attributes]).to have_key(:name)
+    expect(results[:data][:attributes][:name]).to eq(item.name)
+
+  end
+
+  it 'sends data for the first item from find result Sad Path' do
+
+    merchant = create(:merchant, name: "Star Wars")
+    item = create(:item, name: "A-wing", merchant_id: merchant.id)
+    create(:item, merchant_id: merchant.id)
+    create(:item, merchant_id: merchant.id)
+    create(:item, merchant_id: merchant.id)
+
+    allow(Item).to receive(:search_return_one).and_return(item)
+    search = "NOITEM"
+
+    get "/api/v1/items/find?name=#{search}"
+
+    results = JSON.parse(response.body, symbolize_names: true)
+#binding.pry
+    expect(Item).to have_received(:search_return_one).with(search).once
+    expect(response).to be_successful
+    expect(results.count).to eq(1)
+    expect(results[:data].count).to eq(3)
+    expect(results[:data][:attributes]).to have_key(:name)
+    expect(results[:data][:attributes][:name]).to eq(item.name)
+
+  end
+
+  xit 'sends data for all merchants from find result' do
+    merchant1 = create(:merchant, name: "Star Wars")
+    merchant2 = create(:merchant, name: "Star Trek")
+    merchant3 = create(:merchant, name: "StarGate")
+
+    allow(Merchant).to receive(:search).and_return([merchant1, merchant2, merchant3])
+    search = "Star"
+
+    get "/api/v1/merchants/find_all?name=#{search}"
+
+    results = JSON.parse(response.body, symbolize_names: true)
+
+   expect(Merchant).to have_received(:search).with(search)
+   expect(response).to be_successful
+   expect(results.count).to eq(1)
+   expect(results[:data].count).to eq(3)
+   expect(results[:data].first).to have_key(:id)
+   expect(results[:data].first[:attributes]).to have_key(:name)
+
   end
 end
