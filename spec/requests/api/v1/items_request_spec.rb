@@ -147,27 +147,26 @@ RSpec.describe 'The items API' do
 
   end
 
-  it 'sends data for the first item from find result Sad Path' do
+  it 'responds with error for empty search (Sad Path)' do
 
-    merchant = create(:merchant, name: "Star Wars")
-    item = create(:item, name: "A-wing", merchant_id: merchant.id)
-    create(:item, merchant_id: merchant.id)
-    create(:item, merchant_id: merchant.id)
-    create(:item, merchant_id: merchant.id)
 
-    allow(Item).to receive(:search_return_one).and_return(item)
-    search = "NOITEM"
-
-    get "/api/v1/items/find?name=#{search}"
+    get "/api/v1/items/find?name="
 
     results = JSON.parse(response.body, symbolize_names: true)
-    expect(Item).to have_received(:search_return_one).with(search).once
-    expect(response).to be_successful
-    expect(results.count).to eq(1)
-    expect(results[:data].count).to eq(3)
-    expect(results[:data][:attributes]).to have_key(:name)
-    expect(results[:data][:attributes][:name]).to eq(item.name)
+    expect(response.status).to eq(400)
+    expect(results.count).to eq(2)
+    expect(results).to have_key(:message)
+    expect(results[:message]).to eq("your query could not be completed")
+  end
 
+  it 'responds with error if no search data is provided' do
+
+    get "/api/v1/items/find"
+
+    results = JSON.parse(response.body, symbolize_names: true)
+    expect(response.status).to eq(400)
+    expect(results.count).to eq(2)
+    expect(results).to have_key(:message)
   end
 
   it 'sends data for all items from find result' do
@@ -181,9 +180,22 @@ RSpec.describe 'The items API' do
     search = "wing"
 
     get "/api/v1/items/find_all?name=#{search}"
-#    binding.pry
 
     results = JSON.parse(response.body, symbolize_names: true)
-
   end
+
+
+
+  it 'finds all items by min_price search' do
+      create_list(:item, 3)
+
+      get "/api/v1/items/find_all?min_price=0"
+
+      items_found = JSON.parse(response.body, symbolize_names: true)
+      #items_found = JSON.parse(response.body, symbolize_names: true)[:data]
+      expect(response).to be_successful
+
+      expect(items_found.count).to eq(2)
+#      expect(items_found[1][:attributes][:name]).to eq('Gold Ring Op')
+    end
 end
