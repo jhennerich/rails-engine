@@ -1,5 +1,5 @@
 class Api::V1::ItemsController < ApplicationController
-  before_action :check_params_for_name, only: [:find, :find_all]
+  before_action :check_params, only: [:find, :find_all]
 
   def index
     render json: ItemSerializer.new(Item.all), status: :ok
@@ -18,11 +18,8 @@ class Api::V1::ItemsController < ApplicationController
 
   def destroy
     item = Item.find(params[:id])
-#  rescue ActiveRecord::RecordNotFound
-#      wip = render json: error_message, status: 404
     if item
       item.destroy!
-#      render status: 204
     end
   end
 
@@ -36,19 +33,21 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def find
-    if check_params_for_name
-      render json: error_message, status: 400
-      return
+    return if check_params
+
+    item_search = Item.search_return_min_price(params[:min_price]) if params.has_key?(:min_price)
+    item_search = Item.search_return_max_price(params[:max_price]) if params.has_key?(:max_price)
+
+    if params.has_key?(:min_price) && params.has_key?(:max_price)
+      item_search = Item.search_return_min_max_price(params[:min_price],params[:max_price])
     end
-    item_search = Item.search_return_one(params[:name])
+
+    item_search = Item.search_return_one(params[:name]) if params.has_key?(:name)
+
     find_response(item_search)
   end
 
   def find_all
-    if check_params_for_name
-      render json: error_message, status: 400
-      return
-    end
     item_search = Item.search(params[:name])
     find_response(item_search)
   end
@@ -73,7 +72,28 @@ class Api::V1::ItemsController < ApplicationController
       end
     end
 
-    def check_params_for_name
-      check =  !params[:name] || params[:name] == ''
+    def check_params
+      return render json: { 'message': "Can't search name and price together" }, status: 400 if name_and_price_in_params
+      return render json: { 'message': 'search params missing' }, status: 400 if params[:name].blank? && !price_in_params
+      return render json: { 'message': 'min price must be greater than 0' }, status: 400 if ( params[:min_price].to_f < 0 )
+      return render json: { 'message': 'min price search params missing' }, status: 400 if params[:min_price].blank? && price_in_params
+
+      if params.has_key?(:max_price) && params[:max_price].blank?
+        return render json: { 'message': 'max price search params missing' }, status: 400
+      end
+
+      if params.has_key?(:max_price) && (params[:min_price].to_f > params[:max_price].to_f)
+        return render json: { 'message': 'max price must be greater than min price' }, status: 400
+      end
+    end
+
+    def name_and_price_in_params
+      params.has_key?(:min_price) && params.has_key?(:name) ||
+      params.has_key?(:max_price) && params.has_key?(:name) ||
+      params.has_key?(:min_price) && params.has_key?(:max_price) && params.has_key?(:name)
+    end
+
+    def price_in_params
+      params.has_key?(:min_price) || params.has_key?(:max_price)
     end
 end

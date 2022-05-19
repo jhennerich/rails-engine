@@ -151,12 +151,12 @@ RSpec.describe 'The items API' do
 
 
     get "/api/v1/items/find?name="
-
     results = JSON.parse(response.body, symbolize_names: true)
+
     expect(response.status).to eq(400)
-    expect(results.count).to eq(2)
+    expect(results.count).to eq(1)
     expect(results).to have_key(:message)
-    expect(results[:message]).to eq("your query could not be completed")
+    expect(results[:message]).to eq("search params missing")
   end
 
   it 'responds with error if no search data is provided' do
@@ -165,8 +165,9 @@ RSpec.describe 'The items API' do
 
     results = JSON.parse(response.body, symbolize_names: true)
     expect(response.status).to eq(400)
-    expect(results.count).to eq(2)
+    expect(results.count).to eq(1)
     expect(results).to have_key(:message)
+    expect(results[:message]).to eq("search params missing")
   end
 
   it 'sends data for all items from find result' do
@@ -187,15 +188,27 @@ RSpec.describe 'The items API' do
 
 
   it 'finds all items by min_price search' do
-      create_list(:item, 3)
+    merchant = create(:merchant, name: "Star Wars")
+    item = create(:item, name: "A-wing", unit_price: 300, merchant_id: merchant.id)
+    item2 = create(:item, name: "B-wing", unit_price: 200, merchant_id: merchant.id)
+    item3 = create(:item, name: "X-wing", unit_price: 100, merchant_id: merchant.id)
 
-      get "/api/v1/items/find_all?min_price=0"
+    get "/api/v1/items/find?min_price=150"
 
-      items_found = JSON.parse(response.body, symbolize_names: true)
-      #items_found = JSON.parse(response.body, symbolize_names: true)[:data]
-      expect(response).to be_successful
+    results = JSON.parse(response.body, symbolize_names: true)[:data]
 
-      expect(items_found.count).to eq(2)
-#      expect(items_found[1][:attributes][:name]).to eq('Gold Ring Op')
-    end
+    expect(response).to be_successful
+    expect(results[:attributes][:name]).to eq('B-wing')
+
+  end
+  it "Can't search for price and name together" do
+
+    get "/api/v1/items/find?min_price=0&man_price=100&name='foo'"
+    results = JSON.parse(response.body, symbolize_names: true)
+
+    expect(response.status).to eq(400)
+    expect(results.count).to eq(1)
+    expect(results).to have_key(:message)
+    expect(results[:message]).to eq("Can't search name and price together")
+  end
 end
