@@ -1,4 +1,6 @@
 class Api::V1::ItemsController < ApplicationController
+  before_action :check_params_for_name, only: [:find, :find_all]
+
   def index
     render json: ItemSerializer.new(Item.all), status: :ok
   end
@@ -35,13 +37,12 @@ class Api::V1::ItemsController < ApplicationController
 
   def find
     item_search = Item.search_return_one(params[:name])
-    binding.pry
-    wip = find_response(item_search)
+    find_response(item_search)
   end
 
   def find_all
-      item = Item.search(params[:name])
-      find_response(item)
+    item_search = Item.search(params[:name])
+    find_response(item_search)
   end
 
   private
@@ -55,11 +56,16 @@ class Api::V1::ItemsController < ApplicationController
         "errors": []
       }
     end
+
     def find_response(item)
       if item
         render json: ItemSerializer.new(item), status: :ok
       else
         render json: { data: { error: 'Item(s) not found' } }, status: 200
       end
+    end
+
+    def check_params_for_name
+      check =  !params[:name] || params[:name] == ''
     end
 end

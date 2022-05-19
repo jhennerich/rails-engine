@@ -1,4 +1,5 @@
 class Api::V1::MerchantsController < ApplicationController
+  before_action :check_params_for_name, except: [:index, :show]
   def index
     render json: MerchantSerializer.new(Merchant.all), status: :ok
   end

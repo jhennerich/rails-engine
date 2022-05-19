@@ -161,7 +161,6 @@ RSpec.describe 'The items API' do
     get "/api/v1/items/find?name=#{search}"
 
     results = JSON.parse(response.body, symbolize_names: true)
-#binding.pry
     expect(Item).to have_received(:search_return_one).with(search).once
     expect(response).to be_successful
     expect(results.count).to eq(1)
@@ -171,24 +170,20 @@ RSpec.describe 'The items API' do
 
   end
 
-  xit 'sends data for all merchants from find result' do
-    merchant1 = create(:merchant, name: "Star Wars")
-    merchant2 = create(:merchant, name: "Star Trek")
-    merchant3 = create(:merchant, name: "StarGate")
+  it 'sends data for all items from find result' do
+    merchant = create(:merchant, name: "Star Wars")
+    item = create(:item, name: "A-wing", merchant_id: merchant.id)
+    create(:item, merchant_id: merchant.id)
+    create(:item, merchant_id: merchant.id)
+    create(:item, merchant_id: merchant.id)
 
-    allow(Merchant).to receive(:search).and_return([merchant1, merchant2, merchant3])
-    search = "Star"
+    allow(Item).to receive(:search)
+    search = "wing"
 
-    get "/api/v1/merchants/find_all?name=#{search}"
+    get "/api/v1/items/find_all?name=#{search}"
+#    binding.pry
 
     results = JSON.parse(response.body, symbolize_names: true)
-
-   expect(Merchant).to have_received(:search).with(search)
-   expect(response).to be_successful
-   expect(results.count).to eq(1)
-   expect(results[:data].count).to eq(3)
-   expect(results[:data].first).to have_key(:id)
-   expect(results[:data].first[:attributes]).to have_key(:name)
 
   end
 end
