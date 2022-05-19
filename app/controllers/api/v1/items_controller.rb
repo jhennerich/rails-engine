@@ -36,11 +36,19 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def find
+    if check_params_for_name
+      render json: error_message, status: 400
+      return
+    end
     item_search = Item.search_return_one(params[:name])
     find_response(item_search)
   end
 
   def find_all
+    if check_params_for_name
+      render json: error_message, status: 400
+      return
+    end
     item_search = Item.search(params[:name])
     find_response(item_search)
   end
