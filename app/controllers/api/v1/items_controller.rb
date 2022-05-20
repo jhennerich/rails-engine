@@ -60,7 +60,7 @@ class Api::V1::ItemsController < ApplicationController
     def error_message
       {
         "message": "your query could not be completed",
-        "errors": []
+        "error": []
       }
     end
 
@@ -73,13 +73,17 @@ class Api::V1::ItemsController < ApplicationController
     end
 
     def check_params
-      return render json: { 'message': "Can't search name and price together" }, status: 400 if name_and_price_in_params
-      return render json: { 'message': 'search params missing' }, status: 400 if params[:name].blank? && !price_in_params
-      return render json: { 'message': 'min price must be greater than 0' }, status: 400 if ( params[:min_price].to_f < 0 )
-      return render json: { 'message': 'min price search params missing' }, status: 400 if params[:min_price].blank? && price_in_params
+      return render json: { "message": "your query could not be completed", "error": ["Can't search name and price together"] }, status: 400 if name_and_price_in_params
+      return render json: { "message": "your query could not be completed", "error": ['search params missing'] }, status: 400 if params[:name].blank? && !price_in_params
+      return render json: { "message": "your query could not be completed", "error": ['min price must be greater than 0'] }, status: 400 if ( params[:min_price].to_f < 0 )
+      return render json: { "message": "your query could not be completed", "error": ['max price must be greater than 0'] }, status: 400 if ( params[:max_price].to_f < 0 )
+
+      if params.has_key?(:min_price) && params[:min_price].blank?
+        return render json: { "message": "your query could not be completed", "error": ['min price search params missing'] }, status: 400
+      end
 
       if params.has_key?(:max_price) && params[:max_price].blank?
-        return render json: { 'message': 'max price search params missing' }, status: 400
+        return render json: { "message": "max price search params missing" }, status: 400
       end
 
       if params.has_key?(:max_price) && (params[:min_price].to_f > params[:max_price].to_f)

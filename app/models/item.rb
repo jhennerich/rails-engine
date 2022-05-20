@@ -10,7 +10,7 @@ class Item < ApplicationRecord
   end
 
   def self.search_return_max_price(max_price)
-    where("unit_price <= #{max_price.to_f} ").order(:unit_price).first
+    where("unit_price <= #{max_price.to_f} ").order(unit_price: :desc).first
   end
 
   def self.search_return_min_max_price(min_price, max_price)

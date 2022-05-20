@@ -154,9 +154,9 @@ RSpec.describe 'The items API' do
     results = JSON.parse(response.body, symbolize_names: true)
 
     expect(response.status).to eq(400)
-    expect(results.count).to eq(1)
+    expect(results.count).to eq(2)
     expect(results).to have_key(:message)
-    expect(results[:message]).to eq("search params missing")
+    expect(results[:message]).to eq("your query could not be completed")
   end
 
   it 'responds with error if no search data is provided' do
@@ -165,9 +165,9 @@ RSpec.describe 'The items API' do
 
     results = JSON.parse(response.body, symbolize_names: true)
     expect(response.status).to eq(400)
-    expect(results.count).to eq(1)
+    expect(results.count).to eq(2)
     expect(results).to have_key(:message)
-    expect(results[:message]).to eq("search params missing")
+    expect(results[:message]).to eq("your query could not be completed")
   end
 
   it 'sends data for all items from find result' do
@@ -207,8 +207,8 @@ RSpec.describe 'The items API' do
     results = JSON.parse(response.body, symbolize_names: true)
 
     expect(response.status).to eq(400)
-    expect(results.count).to eq(1)
+    expect(results.count).to eq(2)
     expect(results).to have_key(:message)
-    expect(results[:message]).to eq("Can't search name and price together")
+    expect(results[:message]).to eq("your query could not be completed")
   end
 end
