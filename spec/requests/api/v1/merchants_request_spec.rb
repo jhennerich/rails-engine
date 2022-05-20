@@ -102,4 +102,27 @@ RSpec.describe 'The merchants API' do
    expect(results[:data].first[:attributes]).to have_key(:name)
 
   end
+
+  it 'responds with error for empty search (Sad Path)' do
+
+
+    get "/api/v1/merchants/find?name="
+
+    results = JSON.parse(response.body, symbolize_names: true)
+    expect(response.status).to eq(400)
+    expect(results.count).to eq(1)
+    expect(results).to have_key(:message)
+    expect(results[:message]).to eq('search params missing')
+  end
+
+  it 'responds with error if no search data is provided' do
+
+    get "/api/v1/merchants/find"
+
+    results = JSON.parse(response.body, symbolize_names: true)
+    expect(response.status).to eq(400)
+    expect(results.count).to eq(1)
+    expect(results).to have_key(:message)
+    expect(results[:message]).to eq('search params missing')
+  end
 end

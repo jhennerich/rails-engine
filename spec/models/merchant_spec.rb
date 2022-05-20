@@ -13,4 +13,13 @@ RSpec.describe Merchant do
     expect(results.include?(merchant2)).to be true
     expect(results.include?(merchant3)).to be false
   end
+
+  it 'can return one merchant from search result' do
+    merchant = create(:merchant, name: "Star Wars R Us")
+    merchant2 = create(:merchant, name: "sTar Trek R Us")
+    merchant3 = create(:merchant, name: "Outlander R Us")
+
+    results = Merchant.search_return_one("Star")
+    expect(results).to eq(merchant)
+  end
 end
