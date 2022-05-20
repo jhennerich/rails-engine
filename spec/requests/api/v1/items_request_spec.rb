@@ -201,6 +201,37 @@ RSpec.describe 'The items API' do
     expect(results[:attributes][:name]).to eq('B-wing')
 
   end
+
+  it 'finds item by max_price search' do
+    merchant = create(:merchant, name: "Star Wars")
+    item = create(:item, name: "A-wing", unit_price: 300, merchant_id: merchant.id)
+    item2 = create(:item, name: "B-wing", unit_price: 200, merchant_id: merchant.id)
+    item3 = create(:item, name: "X-wing", unit_price: 100, merchant_id: merchant.id)
+
+    get "/api/v1/items/find?max_price=300"
+
+    results = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(response).to be_successful
+    expect(results[:attributes][:name]).to eq('A-wing')
+
+  end
+
+  it 'finds item by min_max_price search' do
+    merchant = create(:merchant, name: "Star Wars")
+    item = create(:item, name: "A-wing", unit_price: 300, merchant_id: merchant.id)
+    item2 = create(:item, name: "B-wing", unit_price: 200, merchant_id: merchant.id)
+    item3 = create(:item, name: "X-wing", unit_price: 100, merchant_id: merchant.id)
+
+    get "/api/v1/items/find?min_price=100&max_price=300"
+
+    results = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(response).to be_successful
+    expect(results[:attributes][:name]).to eq('X-wing')
+
+  end
+
   it "Can't search for price and name together" do
 
     get "/api/v1/items/find?min_price=0&man_price=100&name='foo'"
