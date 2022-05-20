@@ -10,16 +10,18 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def create
-    item = Item.create(item_params)
+    item = Item.new(item_params)
     if item.save
       render json: ItemSerializer.new(item), status: :created
+    else
+      render json: { :message => 'item not created'}, status: 400
     end
   end
 
   def destroy
     item = Item.find(params[:id])
     if item
-      item.destroy!
+      item.destroy
     end
   end
 
@@ -48,6 +50,15 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def find_all
+    return if check_params
+
+    item_search = Item.search_return_min_price_all(params[:min_price]) if params.has_key?(:min_price)
+    item_search = Item.search_return_max_price_all(params[:max_price]) if params.has_key?(:max_price)
+
+    if params.has_key?(:min_price) && params.has_key?(:max_price)
+      item_search = Item.search_return_min_max_price_all(params[:min_price],params[:max_price])
+    end
+
     item_search = Item.search(params[:name])
     find_response(item_search)
   end

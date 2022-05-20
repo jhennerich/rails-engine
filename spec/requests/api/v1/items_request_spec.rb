@@ -69,6 +69,26 @@ RSpec.describe 'The items API' do
     expect(created_item.description).to eq(item_params[:description])
     expect(created_item.unit_price).to eq(item_params[:unit_price])
   end
+  xit "can create a new item sad path" do
+    merchant = create(:merchant)
+    item_params = {
+      extra_param: "something",
+      name: 'X-wing',
+      description: 'Rebel attack fighter',
+      unit_price: 2000,
+      merchant_id: merchant.id
+    }
+
+    headers = {"CONTENT_TYPE" => "application/json"}
+    #include this header to make sure params are passed as JSON rather than as plain text
+
+    post "/api/v1/items", headers: headers, params: JSON.generate(item: item_params)
+    created_item = Item.last
+    binding.pry
+
+    expect(response).to be_successful
+    expect(response.status).to eq(400)
+  end
 
   it 'can delete an item' do
     merchant = create(:merchant)
@@ -86,7 +106,6 @@ RSpec.describe 'The items API' do
   end
 
   it "can update an existing item" do
-
     id = create(:item).id
     previous_name = Item.last.name
     item_params = { name: "X-wing" }
@@ -98,6 +117,18 @@ RSpec.describe 'The items API' do
     expect(response).to be_successful
     expect(item.name).to_not eq(previous_name)
     expect(item.name).to eq("X-wing")
+  end
+
+  xit "can update an existing item sad path" do
+    id = create(:item).id
+    previous_name = Item.last.name
+    item_params = { name: 100}
+    headers = {"CONTENT_TYPE" => "application/json"}
+
+    patch "/api/v1/items/#{id}", headers: headers, params: JSON.generate({item: item_params})
+    item = Item.find_by(id: id)
+
+    expect(response).to_not be_successful
   end
 
   it "can get the merchant data for a given item ID" do
