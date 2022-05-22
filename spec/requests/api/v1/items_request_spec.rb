@@ -69,7 +69,7 @@ RSpec.describe 'The items API' do
     expect(created_item.description).to eq(item_params[:description])
     expect(created_item.unit_price).to eq(item_params[:unit_price])
   end
-  xit "can create a new item sad path" do
+  it "can create a new item ignore non required params" do
     merchant = create(:merchant)
     item_params = {
       extra_param: "something",
@@ -84,10 +84,10 @@ RSpec.describe 'The items API' do
 
     post "/api/v1/items", headers: headers, params: JSON.generate(item: item_params)
     created_item = Item.last
-    binding.pry
 
     expect(response).to be_successful
-    expect(response.status).to eq(400)
+    expect(item_params[:extra_param]).to eq('something')
+    expect(JSON.parse(response.body)["extra_param"]).to_not eq('something')
   end
 
   it 'can delete an item' do
@@ -119,16 +119,10 @@ RSpec.describe 'The items API' do
     expect(item.name).to eq("X-wing")
   end
 
-  xit "can update an existing item sad path" do
+  it "can update an existing item sad path" do
     id = create(:item).id
-    previous_name = Item.last.name
-    item_params = { name: 100}
-    headers = {"CONTENT_TYPE" => "application/json"}
 
-    patch "/api/v1/items/#{id}", headers: headers, params: JSON.generate({item: item_params})
-    item = Item.find_by(id: id)
-
-    expect(response).to_not be_successful
+    expect{ patch "/api/v1/items/#{id}", {}}.to raise_error ActionController::ParameterMissing
   end
 
   it "can get the merchant data for a given item ID" do
